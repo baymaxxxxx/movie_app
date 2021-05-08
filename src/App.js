@@ -1,48 +1,63 @@
-import React from 'react'
+import React from "react";
+import axios from "axios";
+import Movie from "./Movie"
+import "./App.css"
 
 class App extends React.Component {
+
   state = {
-    count: 0
+    isLoading: true,
+    movies: []
+  };
+
+  //getMovies는 axios가 끝날때까지 기다렸다가 계속해 (axios.get은 완료되기까지 시간이 필요함)
+  getMovies = async () => {
+    const {
+      data: {
+        data: { movies } } } =
+      await axios.get("https://yts-proxy.now.sh/list_movies.json?sort_by=rating");
+    console.log(movies)
+    this.setState({
+      movies /* movies:movies */
+      , isLoading: false
+    })
   }
 
-  add = () => {
-    this.setState(current => ({count: current.count + 1}))
-  }
-  minus = () => {
-    this.setState(current => ({count: current.count - 1}))
+  // application이 mount된 후 (=componentDidMount) getMovies함수를 호출
+  componentDidMount() {
+    this.getMovies();
   }
 
   render() {
+    const { isLoading, movies } = this.state;
     return (
-      <div>
-        <h1>
-          The number is: {this.state.count}
-        </h1>
-        <button onClick={this.add}>Add</button>
-        <button onClick={this.minus}>Minus</button>
-      </div>
+      <section className="container">
+        {isLoading ?
+          (<div className="loader">
+            <span className="loader__text">Loading...</span>
+          </div>)
+          : (
+            <div className="movies">
+              {movies.map(movie => (
+                  <Movie
+                    key={movie.id}
+                    id={movie.id}
+                    title={movie.title}
+                    genres={movie.genres}
+                    year={movie.year}
+                    summary={movie.summary}
+                    poster={movie.medium_cover_image} />
+                ))}
+            </div>
+          )
+        }
+      </section>
     )
   }
+
 }
+
+
 
 
 export default App;
-
-
-//children component로 정보를 보내는 방법을 할거야
-//application에서 food component로 정보를 보내고
-// 그다음에 foodcomponent에서 정보를 사용해보자.
-//dish는 object다!! 꼭기억해 
-//
-//setState를 사용하면 새 state를 업데이트하고 render function이 호출된다. 
-//state를 set할때, react에서 외부의 상태에 의존하지 않는 가장 좋은 방법
-/*
-NOT 
-add = () => {
-  this.setState({count: this.state.count + 1})
-}
-DO
-add = () => {
-    this.setState(current => ({count: current.count + 1}))
-  }
-*/
